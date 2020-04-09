@@ -1,6 +1,8 @@
 const fs = require('fs')
 const util = require('util')
+const base64 = require('js-base64').Base64;
 const { google } = require('googleapis')
+const htmlToText = require('html-to-text');
 
 const readFile = util.promisify(fs.readFile)
 
@@ -147,18 +149,34 @@ export const getMessages = async () => {
   const gmail = google.gmail({version: 'v1', auth});
   gmail.users.messages.get({
     userId: 'me',
-    id: '170f05885bc771e5'
+    id: '170ada72ea9ee29b',
+    // format: 'raw'
+
     // pageToken: PageToken,
     // q: `in:sent after:2020/03/10`
   }, (err, res) => {
     if (err) return console.log('The API returned an error: ' + err);
-    console.log(res.data)
+    // console.log(res.data.raw)
 
     console.log(res.data.payload.parts)
 
-    // res.data.payload.headers.forEach(i=>{
-    //   console.log(i)
-    // })
+    res.data.payload.parts.forEach(part => {
+      if(part.body.data){
+        let arr = part.body.data.split('-')
+        arr.forEach(data =>{
+          console.log(base64.decode(data))
+        })
+
+        // if(part.mimeType === 'text/html'){
+        //   arr.forEach(data =>{
+        //     console.log(base64.decode(htmlToText.fromString(data)))
+        //
+        //   })
+        // }
+      }
+
+    })
+
 
   });
 }
